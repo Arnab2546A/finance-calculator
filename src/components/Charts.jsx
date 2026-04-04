@@ -92,7 +92,7 @@ export default function Charts({ chartType = 'both' }) {
             <p className="text-xs text-gray-500">Spending breakdown</p>
           </div>
           <div className="bg-purple-50/50 rounded-lg p-2 border border-purple-100 flex justify-center">
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={400}>
               <PieChart>
                 <Pie
                   data={spendingByCategory}
@@ -100,7 +100,7 @@ export default function Charts({ chartType = 'both' }) {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                  outerRadius={70}
+                  outerRadius={100}
                   fill="#8884d8"
                   dataKey="value"
                   animationDuration={1000}
