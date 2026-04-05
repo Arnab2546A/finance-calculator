@@ -154,11 +154,11 @@ export default function Dashboard() {
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Left Column - Overview */}
-            <div>
+          <div className="grid grid-cols-3 gap-6">
+            {/* Left Column - Overview and Pie Chart */}
+            <div className="space-y-6 col-span-2">
               {/* Overview Chart */}
-              <div className="bg-white rounded-lg p-6 border border-gray-200 h-full">
+              <div className="bg-white rounded-lg p-6 border border-gray-200">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-base font-semibold text-gray-900">Overview</h2>
                   <select className="px-3 py-1 border border-blue-600 rounded-full text-xs font-semibold text-white bg-blue-600 focus:outline-none">
@@ -168,14 +168,41 @@ export default function Dashboard() {
                 <Charts chartType="lineOnly" />
               </div>
 
-              {/* Pie Chart - Full Width */}
-              {/* Removed */}
+              {/* Pie Chart Section - Two Boxes */}
+              <div className="grid grid-cols-3 gap-4">
+                {/* Chart Box - 2 columns */}
+                <div className="bg-white rounded-lg p-6 border border-gray-200 col-span-2">
+                  <h2 className="text-base font-semibold text-gray-900 mb-4">Spending Distribution</h2>
+                  <Charts chartType="pieOnly" />
+                </div>
 
-              {/* Stats Grid - Removed */}
+                {/* Legend Box - 1 column */}
+                <div className="bg-white rounded-lg p-6 border border-gray-200 col-span-1">
+                  <h2 className="text-base font-semibold text-gray-900 mb-4">Categories</h2>
+                  <div className="space-y-3">
+                    {[
+                      { name: 'Groceries', color: '#3b82f6', value: '$1,200' },
+                      { name: 'Entertainment', color: '#ef4444', value: '$800' },
+                      { name: 'Utilities', color: '#10b981', value: '$450' },
+                      { name: 'Transportation', color: '#f59e0b', value: '$600' },
+                      { name: 'Healthcare', color: '#a855f7', value: '$350' },
+                    ].map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-xs text-gray-700">{item.name}</span>
+                        <span className="text-xs font-semibold text-gray-900 ml-auto">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right Column - Profile Card */}
-            <div>
+            <div className="col-span-1">
               <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-8 text-white border-2 border-blue-600 h-full">
                 {/* Profile Section */}
                 <div className="text-center mb-8">

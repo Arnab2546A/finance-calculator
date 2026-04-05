@@ -42,7 +42,7 @@ export default function Charts({ chartType = 'both' }) {
             <p className="text-xs text-gray-500">Balance trend</p>
           </div>
           <div className="bg-blue-50/50 rounded-lg p-2 border border-blue-100">
-            <ResponsiveContainer width="100%" height={180}>
+            <ResponsiveContainer width="100%" height={300}>
               <LineChart data={balanceOverTime} isAnimationActive={true}>
                 <defs>
                   <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
@@ -92,7 +92,7 @@ export default function Charts({ chartType = 'both' }) {
             <p className="text-xs text-gray-500">Spending breakdown</p>
           </div>
           <div className="bg-purple-50/50 rounded-lg p-2 border border-purple-100 flex justify-center">
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={380}>
               <PieChart>
                 <Pie
                   data={spendingByCategory}
@@ -100,7 +100,7 @@ export default function Charts({ chartType = 'both' }) {
                   cy="50%"
                   labelLine={false}
                   label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
+                  outerRadius={120}
                   fill="#8884d8"
                   dataKey="value"
                   animationDuration={1000}
