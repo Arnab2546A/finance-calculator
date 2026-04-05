@@ -168,32 +168,39 @@ export default function Dashboard() {
                 <Charts chartType="lineOnly" />
               </div>
 
-              {/* Pie Chart Section - Two Boxes */}
-              <div className="grid grid-cols-3 gap-4">
-                {/* Chart Box - 2 columns */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200 col-span-2">
-                  <h2 className="text-base font-semibold text-gray-900 mb-4">Spending Distribution</h2>
-                  <Charts chartType="pieOnly" />
+              {/* Monthly Expense & Pie Chart Section */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Monthly Expense Breakdown */}
+                <div className="bg-white rounded-lg p-6 border border-gray-200">
+                  <h2 className="text-lg font-bold text-gray-800 mb-4">Monthly Expense Breakdown</h2>
+                  <div className="space-y-4">
+                    <p className="text-sm font-semibold text-gray-600">👉 Show:</p>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between"><span>Week 1</span> <span className="font-semibold">₹2000</span></div>
+                      <div className="flex justify-between"><span>Week 2</span> <span className="font-semibold">₹3500</span></div>
+                      <div className="flex justify-between"><span>Week 3</span> <span className="font-semibold">₹1500</span></div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Legend Box - 1 column */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200 col-span-1">
-                  <h2 className="text-base font-semibold text-gray-900 mb-4">Categories</h2>
-                  <div className="space-y-3">
-                    {[
+                {/* Spending Distribution Section */}
+                <div className="bg-white rounded-lg p-6 border border-gray-200">
+                  <h2 className="text-base font-semibold text-gray-900 mb-4">Spending Distribution</h2>
+                  <div className="h-48 mb-4">
+                    <Charts chartType="pieOnly" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                    {([
                       { name: 'Groceries', color: '#3b82f6', value: '$1,200' },
                       { name: 'Entertainment', color: '#ef4444', value: '$800' },
                       { name: 'Utilities', color: '#10b981', value: '$450' },
                       { name: 'Transportation', color: '#f59e0b', value: '$600' },
                       { name: 'Healthcare', color: '#a855f7', value: '$350' },
-                    ].map((item, idx) => (
+                    ]).map((item, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-xs text-gray-700">{item.name}</span>
-                        <span className="text-xs font-semibold text-gray-900 ml-auto">{item.value}</span>
+                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: item.color }}></div>
+                        <span className="text-sm text-gray-600">{item.name}</span>
+                        <span className="text-sm font-semibold text-gray-800 ml-auto">{item.value}</span>
                       </div>
                     ))}
                   </div>

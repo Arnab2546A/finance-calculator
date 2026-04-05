@@ -84,50 +84,39 @@ export default function Charts({ chartType = 'both' }) {
 
   if (chartType === 'pieOnly') {
     return (
-      <div className="group relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-300/30 to-pink-300/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
-        <div className="relative bg-white backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl p-4 border border-gray-200 hover:border-purple-300 transition-all duration-500">
-          <div className="flex flex-col gap-1 mb-3">
-            <h2 className="text-lg font-bold text-purple-700">CHART</h2>
-            <p className="text-xs text-gray-500">Spending breakdown</p>
-          </div>
-          <div className="bg-purple-50/50 rounded-lg p-2 border border-purple-100 flex justify-center">
-            <ResponsiveContainer width="100%" height={380}>
-              <PieChart>
-                <Pie
-                  data={spendingByCategory}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
-                  outerRadius={120}
-                  fill="#8884d8"
-                  dataKey="value"
-                  animationDuration={1000}
-                >
-                  {spendingByCategory.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={colors[index % colors.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value) => `$${value.toLocaleString()}`}
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #a855f7',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    padding: '6px 10px',
-                    fontSize: '11px'
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={spendingByCategory}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            animationDuration={1000}
+          >
+            {spendingByCategory.map((entry, index) => (
+              <Cell 
+                key={`cell-${index}`} 
+                fill={colors[index % colors.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip
+            formatter={(value) => `$${value.toLocaleString()}`}
+            contentStyle={{
+              backgroundColor: '#ffffff',
+              border: '1px solid #a855f7',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              padding: '6px 10px',
+              fontSize: '11px'
+            }}
+          />
+        </PieChart>
+      </ResponsiveContainer>
     );
   }
 
