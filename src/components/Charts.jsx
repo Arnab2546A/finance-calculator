@@ -32,10 +32,55 @@ const spendingByCategory = [
   { name: 'Healthcare', value: 350 },
 ];
 
-export default function Charts({ chartType = 'both' }) {
+export default function Charts({ chartType = 'both', transactions = [], timePeriod = 'month', darkMode = false }) {
   const [activeIndex, setActiveIndex] = useState(null);
   const pieContainerRef = useRef(null);
   const [pieContainerSize, setPieContainerSize] = useState({ width: 0, height: 0 });
+
+  // Calculate balance over time from transactions
+  const calculateBalanceOverTime = () => {
+    if (transactions.length === 0) return balanceOverTime;
+    
+    const dataMap = {};
+
+    // Group transactions by time period
+    transactions.forEach((t) => {
+      const date = new Date(t.date);
+      let key;
+      
+      if (timePeriod === 'week') {
+        // Daily data for week view
+        const dayOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        key = dayOfWeek[date.getDay()];
+      } else if (timePeriod === 'month') {
+        // Weekly data for month view
+        const weekNumber = Math.ceil(date.getDate() / 7);
+        key = `W${weekNumber}`;
+      } else if (timePeriod === 'year') {
+        // Monthly data for year view
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        key = monthNames[date.getMonth()];
+      }
+      
+      const amount = t.type === 'Income' ? t.amount : -t.amount;
+      if (!dataMap[key]) {
+        dataMap[key] = 0;
+      }
+      dataMap[key] += amount;
+    });
+
+    // Convert to array and calculate running balance
+    let balance = 0;
+    return Object.entries(dataMap).map(([period, amount]) => {
+      balance += amount;
+      return {
+        month: period,
+        balance: Math.max(0, balance),
+      };
+    });
+  };
+
+  const chartData = calculateBalanceOverTime();
 
   useEffect(() => {
     const node = pieContainerRef.current;
@@ -67,49 +112,58 @@ export default function Charts({ chartType = 'both' }) {
 
   if (chartType === 'lineOnly') {
     return (
-      <div className="group relative h-full">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-300/30 to-purple-300/30 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500 opacity-0 group-hover:opacity-100"></div>
-        <div className="relative bg-white backdrop-blur-xl rounded-2xl shadow-lg hover:shadow-xl p-4 border border-gray-200 hover:border-blue-300 transition-all duration-500">
-          <div className="flex flex-col gap-1 mb-3">
-            <h2 className="text-lg font-bold text-blue-700">Overview</h2>
-            <p className="text-xs text-gray-500">Balance trend</p>
-          </div>
-          <div className="bg-blue-50/50 rounded-lg p-2 border border-blue-100 min-w-0">
-            <ResponsiveContainer width="100%" height={300} minWidth={0}>
-              <LineChart data={balanceOverTime} isAnimationActive={true}>
-                <defs>
-                  <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#60a5fa" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#dbeafe" opacity={0.3} />
-                <XAxis dataKey="month" stroke="#9ca3af" style={{ fontSize: '10px' }} />
-                <YAxis stroke="#9ca3af" style={{ fontSize: '10px' }} width={35} />
-                <Tooltip
-                  formatter={(value) => `$${value.toLocaleString()}`}
-                  contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #3b82f6',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                    padding: '6px 10px',
-                    fontSize: '11px'
-                  }}
-                />
-                <Line
-                  type="natural"
-                  dataKey="balance"
-                  stroke="#60a5fa"
-                  strokeWidth={2}
-                  dot={{ fill: '#60a5fa', r: 3, strokeWidth: 1, stroke: '#fff' }}
-                  activeDot={{ r: 5, fill: '#3b82f6' }}
-                  isAnimationActive={true}
-                  animationDuration={800}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+      <div className="w-full h-auto min-h-0">
+        <div className={`rounded-lg p-4 sm:p-6 border min-w-0 ${darkMode ? 'bg-gray-700/30 border-gray-600' : 'bg-gradient-to-br from-blue-50 to-white border-blue-100'}`}>
+          <ResponsiveContainer width="100%" height={280} minWidth={0}>
+            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+              <defs>
+                <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#93c5fd" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? '#4b5563' : '#dbeafe'} opacity={0.5} vertical={false} />
+              <XAxis 
+                dataKey="month" 
+                stroke={darkMode ? '#9ca3af' : '#9ca3af'} 
+                style={{ fontSize: '12px' }}
+                tick={{ fill: darkMode ? '#d1d5db' : '#6b7280' }}
+              />
+              <YAxis 
+                stroke={darkMode ? '#9ca3af' : '#9ca3af'} 
+                style={{ fontSize: '12px' }}
+                width={45}
+                tick={{ fill: '#6b7280' }}
+              />
+              <Tooltip
+                formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                contentStyle={{
+                  backgroundColor: darkMode ? '#374151' : '#ffffff',
+                  border: `2px solid ${darkMode ? '#4b5563' : '#3b82f6'}`,
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  color: darkMode ? '#f3f4f6' : '#000000'
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ paddingTop: '15px', color: darkMode ? '#d1d5db' : '#6b7280' }}
+                formatter={() => 'Balance'}
+              />
+              <Line
+                type="monotone"
+                dataKey="balance"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                fill="url(#colorBalance)"
+                dot={{ fill: '#3b82f6', r: 4, strokeWidth: 2, stroke: '#ffffff' }}
+                activeDot={{ r: 6, fill: '#1e40af', stroke: '#ffffff', strokeWidth: 2 }}
+                isAnimationActive={true}
+                animationDuration={600}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
     );
