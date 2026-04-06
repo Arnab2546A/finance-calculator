@@ -6,19 +6,17 @@ import "tailwindcss";
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  summaryMetrics,
   spendingByCategory,
   colors,
 } from '../data/financialData';
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('All');
+  const filterType = 'All';
   const [sortBy, setSortBy] = useState('date');
   const [userRole, setUserRole] = useState('Viewer');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingTransaction, setEditingTransaction] = useState(null);
+  const handleAddTransaction = () => {};
+  const handleEditTransaction = () => {};
 
   // Sample transactions data
   const allTransactions = [
@@ -45,63 +43,33 @@ export default function Dashboard() {
     { id: 17, date: '2024-03-25', description: 'Gym Membership', amount: 30.00, category: 'Health', type: 'Expense' },
   ];
 
-  // Calculate category spending
-  const calculateCategorySpending = (transactions) => {
-    const spending = {};
-    transactions
-      .filter(t => t.type === 'Expense')
-      .forEach(t => {
-        spending[t.category] = (spending[t.category] || 0) + t.amount;
-      });
-    return spending;
-  };
+  const thisMonthExpenseTotal = allTransactions
+    .filter((transaction) => transaction.type === 'Expense')
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-  // Get insights
-  const thisMonthSpending = calculateCategorySpending(allTransactions);
-  const lastMonthSpending = calculateCategorySpending(lastMonthTransactions);
+  const lastMonthExpenseTotal = lastMonthTransactions
+    .filter((transaction) => transaction.type === 'Expense')
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-  // Find highest spending category this month
-  const highestCategory = Object.entries(thisMonthSpending).sort((a, b) => b[1] - a[1])[0];
+  const thisMonthIncomeTotal = allTransactions
+    .filter((transaction) => transaction.type === 'Income')
+    .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-  // Calculate month-over-month comparison
-  const generateInsights = () => {
-    const insights = [];
+  const thisMonthSavings = thisMonthIncomeTotal - thisMonthExpenseTotal;
+  const expenseDifference = thisMonthExpenseTotal - lastMonthExpenseTotal;
+  const expenseChangePercent = lastMonthExpenseTotal > 0
+    ? ((expenseDifference / lastMonthExpenseTotal) * 100).toFixed(0)
+    : '0';
 
-    // Highest spending insight
-    if (highestCategory) {
-      insights.push({
-        type: 'highest',
-        category: highestCategory[0],
-        amount: highestCategory[1],
-        emoji: '📊'
-      });
-    }
+  const weeklySavingGoals = [
+    { week: 'Week 1', amount: 2000 },
+    { week: 'Week 2', amount: 3500 },
+    { week: 'Week 3', amount: 1500 },
+    { week: 'Week 4', amount: 2500 },
+  ];
 
-    // Month-over-month comparison
-    Object.entries(thisMonthSpending).forEach(([category, thisMonth]) => {
-      const lastMonth = lastMonthSpending[category] || 0;
-      if (lastMonth > 0) {
-        const percentChange = ((thisMonth - lastMonth) / lastMonth) * 100;
-        if (Math.abs(percentChange) >= 10) { // Only show significant changes
-          insights.push({
-            type: 'comparison',
-            category,
-            thisMonth,
-            lastMonth,
-            percentChange,
-            emoji: percentChange > 0 ? '📈' : '📉'
-          });
-        }
-      }
-    });
-
-    return insights.slice(0, 3); // Show top 3 insights
-  };
-
-  const insights = generateInsights();
-
-  const displayedCategories = spendingByCategory.slice(0, 5);
-  const hasMoreCategories = spendingByCategory.length > 5;
+  const displayedCategories = spendingByCategory.slice(0, 4);
+  const hasMoreCategories = spendingByCategory.length > 4;
 
   // Filter transactions
   let filteredTransactions = allTransactions.filter(t => {
@@ -183,7 +151,7 @@ export default function Dashboard() {
                     <h2 className="text-lg font-bold text-gray-800">Recent Transactions</h2>
                     {userRole === 'Admin' && (
                       <button
-                        onClick={() => setShowAddModal(true)}
+                        onClick={handleAddTransaction}
                         className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
                       >
                         + Add Transaction
@@ -194,11 +162,8 @@ export default function Dashboard() {
                     transactions={filteredTransactions}
                     onSort={setSortBy}
                     userRole={userRole}
-                    onAdd={() => setShowAddModal(true)}
-                    onEdit={(transaction) => {
-                      setEditingTransaction(transaction);
-                      setShowEditModal(true);
-                    }}
+                    onAdd={handleAddTransaction}
+                    onEdit={handleEditTransaction}
                   />
                 </div>
               </div>
@@ -234,69 +199,77 @@ export default function Dashboard() {
                   {/* Divider */}
                   <div className="border-t border-blue-600 mb-6"></div>
 
-                  {/* Overall Stats */}
+                  {/* Insights Section */}
                   <div>
-                    <h4 className="text-sm font-bold mb-4">Overall Stats</h4>
-                    <div className="space-y-4">
-                      {(
-                        [
-                          { label: 'Service 01', percent: 75 },
-                          { label: 'Service 02', percent: 65 },
-                          { label: 'Service 03', percent: 85 },
-                          { label: 'Service 04', percent: 55 },
-                          { label: 'Service 05', percent: 90 },
-                        ]
-                      ).map((item, idx) => (
-                        <div key={idx}>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-xs font-semibold text-blue-200">{item.label}</span>
-                            <span className="text-xs font-semibold text-blue-200">{item.percent}%</span>
-                          </div>
-                          <div className="w-full bg-blue-500 rounded-full h-1.5">
-                            <div className="bg-cyan-300 h-1.5 rounded-full" style={{ width: `${item.percent}%` }}></div>
-                          </div>
+                    <div className="mb-4">
+                      <h4 className="text-lg font-bold text-white">Insights</h4>
+                    </div>
+
+                    <div className="mt-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.16)]">
+                      <h5 className="text-sm font-semibold text-white tracking-wide mb-3">Monthly Expense Breakdown</h5>
+
+                      <div className="rounded-xl bg-white/10 border border-white/10 p-3">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-100/80 mb-2">Saving Goal</p>
+                        <div className="space-y-2">
+                          {weeklySavingGoals.map((goal) => (
+                            <div key={goal.week} className="flex items-center justify-between text-xs">
+                              <span className="text-blue-50/90">{goal.week}</span>
+                              <span className="font-semibold text-white">
+                                {goal.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
+                              </span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="rounded-xl border border-emerald-200/30 bg-emerald-500/10 p-3">
+                          <p className="text-[11px] uppercase tracking-wider text-emerald-100/90 mb-1">Saved</p>
+                          <p className="text-sm font-semibold text-white">
+                            {thisMonthSavings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-amber-200/30 bg-amber-500/10 p-3">
+                          <p className="text-[11px] uppercase tracking-wider text-amber-100/90 mb-1">Alert</p>
+                          <p className="text-sm font-semibold text-white">
+                            {expenseDifference > 0
+                              ? `Spending is higher by ${Math.abs(Number(expenseChangePercent))}%`
+                              : 'Spending is under control'}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Spending Distribution Section */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
+                <div className="bg-white rounded-lg p-6 border border-gray-200 min-w-0">
                   <h2 className="text-lg font-bold text-gray-800 mb-4">Spending Distribution</h2>
-                  <div className="h-48 mb-4">
+                  <div className="h-64 mb-5 min-w-0">
                     <Charts chartType="pieOnly" />
                   </div>
-                  <div className="space-y-3">
-                    {displayedCategories.map((item, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: colors[idx % colors.length] }}></div>
-                        <span className="text-sm text-gray-600 truncate">{item.name}</span>
-                        <span className="text-base font-semibold text-gray-800 ml-auto">${item.value.toLocaleString()}</span>
-                      </div>
-                    ))}
+                  <div className="px-6 sm:px-8">
+                    <div className="max-w-[420px] ml-12 sm:ml-14 md:ml-16 mr-auto space-y-2">
+                      {displayedCategories.map((item, idx) => (
+                        <div key={idx} className="flex w-full min-w-0 items-center gap-2 py-1.5 pl-6 sm:pl-8 md:pl-10 lg:pl-12">
+                          <div className="w-3 h-3 rounded-sm shrink-0 ml-4 sm:ml-6 md:ml-8 lg:ml-10" style={{ backgroundColor: colors[idx % colors.length] }}></div>
+                          <span className="min-w-0 truncate text-[12px] sm:text-[13px] font-medium text-gray-700">{item.name}</span>
+                          <span className="shrink-0 text-[12px] sm:text-[13px] font-semibold text-gray-800">${item.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   {hasMoreCategories && (
-                    <div className="mt-4 text-right">
-                      <Link to="/pie-chart" className="text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                        View More &rarr;
-                      </Link>
+                    <div className="mt-4 px-6 sm:px-8">
+                      <div className="max-w-[420px] ml-12 sm:ml-14 md:ml-16 mr-auto text-right pr-2 pl-6 sm:pl-8 md:pl-10 lg:pl-12">
+                        <Link to="/pie-chart" className="text-[12px] sm:text-[13px] font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                          View More &rarr;
+                        </Link>
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Monthly Expense Breakdown */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">Monthly Expense Breakdown</h2>
-                  <div className="space-y-4">
-                    <p className="text-sm font-semibold text-gray-600">👉 Show:</p>
-                    <div className="space-y-3 text-sm">
-                      <div className="flex justify-between"><span>Week 1</span> <span className="font-semibold">₹2000</span></div>
-                      <div className="flex justify-between"><span>Week 2</span> <span className="font-semibold">₹3500</span></div>
-                      <div className="flex justify-between"><span>Week 3</span> <span className="font-semibold">₹1500</span></div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
