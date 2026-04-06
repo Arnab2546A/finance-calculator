@@ -12,6 +12,7 @@ import {
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [weeklySpendingTarget, setWeeklySpendingTarget] = useState(2500);
   const filterType = 'All';
   const [sortBy, setSortBy] = useState('date');
   const [userRole, setUserRole] = useState('Viewer');
@@ -32,22 +33,7 @@ export default function Dashboard() {
     { id: 10, date: '2024-04-10', description: 'Bonus Payment', amount: 250.00, category: 'Income', type: 'Income' },
   ];
 
-  // Last month's transactions data (for comparison)
-  const lastMonthTransactions = [
-    { id: 11, date: '2024-03-01', description: 'Grocery Store', amount: 45.00, category: 'Food', type: 'Expense' },
-    { id: 12, date: '2024-03-02', description: 'Gas Station', amount: 50.00, category: 'Travel', type: 'Expense' },
-    { id: 13, date: '2024-03-05', description: 'Restaurant', amount: 55.00, category: 'Food', type: 'Expense' },
-    { id: 14, date: '2024-03-10', description: 'Movie Tickets', amount: 20.00, category: 'Entertainment', type: 'Expense' },
-    { id: 15, date: '2024-03-15', description: 'Electric Bill', amount: 110.00, category: 'Utilities', type: 'Expense' },
-    { id: 16, date: '2024-03-20', description: 'Coffee Shop', amount: 8.00, category: 'Food', type: 'Expense' },
-    { id: 17, date: '2024-03-25', description: 'Gym Membership', amount: 30.00, category: 'Health', type: 'Expense' },
-  ];
-
   const thisMonthExpenseTotal = allTransactions
-    .filter((transaction) => transaction.type === 'Expense')
-    .reduce((sum, transaction) => sum + transaction.amount, 0);
-
-  const lastMonthExpenseTotal = lastMonthTransactions
     .filter((transaction) => transaction.type === 'Expense')
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
@@ -55,18 +41,15 @@ export default function Dashboard() {
     .filter((transaction) => transaction.type === 'Income')
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
-  const thisMonthSavings = thisMonthIncomeTotal - thisMonthExpenseTotal;
-  const expenseDifference = thisMonthExpenseTotal - lastMonthExpenseTotal;
-  const expenseChangePercent = lastMonthExpenseTotal > 0
-    ? ((expenseDifference / lastMonthExpenseTotal) * 100).toFixed(0)
+  // Calculate actual weekly spending and savings
+  const actualWeeklySpending = thisMonthExpenseTotal;
+  const actualSavings = thisMonthIncomeTotal - weeklySpendingTarget;
+  const spendingVsTarget = actualWeeklySpending - weeklySpendingTarget;
+  const isOverBudget = spendingVsTarget > 0;
+  const budgetDifference = Math.abs(spendingVsTarget);
+  const budgetDifferencePercent = weeklySpendingTarget > 0 
+    ? ((budgetDifference / weeklySpendingTarget) * 100).toFixed(0)
     : '0';
-
-  const weeklySavingGoals = [
-    { week: 'Week 1', amount: 2000 },
-    { week: 'Week 2', amount: 3500 },
-    { week: 'Week 3', amount: 1500 },
-    { week: 'Week 4', amount: 2500 },
-  ];
 
   const displayedCategories = spendingByCategory.slice(0, 4);
   const hasMoreCategories = spendingByCategory.length > 4;
@@ -131,14 +114,17 @@ export default function Dashboard() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               {/* Left Column - Overview and Transactions */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-8">
                 {/* Overview Chart */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-bold text-gray-800">Overview</h2>
-                    <select className="px-3 py-1 border border-blue-600 rounded-full text-xs font-semibold text-white bg-blue-600 focus:outline-none">
+                <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.01]">
+                  <div className="flex justify-between items-center mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Overview</h2>
+                      <p className="text-xs text-gray-500 mt-1">Your spending trends</p>
+                    </div>
+                    <select className="px-4 py-2 border border-blue-600 rounded-full text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-colors">
                       <option>All List</option>
                     </select>
                   </div>
@@ -146,13 +132,16 @@ export default function Dashboard() {
                 </div>
 
                 {/* Transactions Table */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <h2 className="text-lg font-bold text-gray-800">Recent Transactions</h2>
+                <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.01]">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Recent Transactions</h2>
+                      <p className="text-xs text-gray-500 mt-1">Latest activities</p>
+                    </div>
                     {userRole === 'Admin' && (
                       <button
                         onClick={handleAddTransaction}
-                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm transition-colors"
+                        className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-lg font-semibold text-sm transition-all duration-300 hover:shadow-lg transform hover:scale-105"
                       >
                         + Add Transaction
                       </button>
@@ -168,74 +157,129 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Right Column - Profile, Spending, and Monthly Breakdown */}
-              <div className="space-y-6">
+              {/* Right Column - Profile, Spending, and Insights */}
+              <div className="space-y-8">
                 {/* Profile Card */}
-                <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-lg p-8 text-white border-2 border-blue-600">
+                <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-xl p-8 lg:p-10 text-white border-2 border-blue-600 shadow-lg transition-all duration-300 transform hover:scale-[1.02]">
                   {/* Profile Section */}
-                  <div className="text-center mb-8">
-                    <div className="w-28 h-28 bg-white rounded-full mx-auto mb-4 flex items-center justify-center text-5xl shadow-lg">
+                  <div className="flex flex-col items-center justify-center mb-8">
+                    <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center text-5xl shadow-xl">
                       👤
                     </div>
-                    <h3 className="text-2xl font-bold">Jane Lauren</h3>
+                    <h3 className="text-3xl font-bold mt-4">Jane Lauren</h3>
+                    <p className="text-blue-200 text-sm mt-2">Premium Member</p>
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-4 mb-8">
-                    <div className="text-center">
-                      <p className="text-blue-200 text-xs font-semibold mb-2">Earning</p>
-                      <p className="text-2xl font-bold text-cyan-300">$2314</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-blue-200 text-xs font-semibold mb-2">Bonus</p>
-                      <p className="text-2xl font-bold text-cyan-300">$200</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-blue-200 text-xs font-semibold mb-2">Favorite</p>
-                      <p className="text-2xl font-bold text-cyan-300">$2,340</p>
-                    </div>
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    {[
+                      { 
+                        label: 'Total Balance', 
+                        value: actualSavings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
+                      },
+                      { 
+                        label: 'Total Income', 
+                        value: thisMonthIncomeTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
+                      },
+                      { 
+                        label: 'Total Expenses', 
+                        value: thisMonthExpenseTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })
+                      }
+                    ].map((stat, idx) => (
+                      <div key={idx} className="text-center p-4 rounded-lg bg-white/10 border border-white/20 backdrop-blur">
+                        <p className="text-blue-200 text-xs font-semibold mb-2 uppercase tracking-wider">{stat.label}</p>
+                        <p className="text-3xl font-bold text-cyan-300">{stat.value}</p>
+                      </div>
+                    ))}
                   </div>
 
                   {/* Divider */}
-                  <div className="border-t border-blue-600 mb-6"></div>
+                  <div className="border-t border-blue-500/50 mb-6"></div>
 
                   {/* Insights Section */}
-                  <div>
-                    <div className="mb-4">
-                      <h4 className="text-lg font-bold text-white">Insights</h4>
-                    </div>
-
-                    <div className="mt-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-xl shadow-[0_10px_30px_rgba(15,23,42,0.16)]">
-                      <h5 className="text-sm font-semibold text-white tracking-wide mb-3">Monthly Expense Breakdown</h5>
-
-                      <div className="rounded-xl bg-white/10 border border-white/10 p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-100/80 mb-2">Saving Goal</p>
-                        <div className="space-y-2">
-                          {weeklySavingGoals.map((goal) => (
-                            <div key={goal.week} className="flex items-center justify-between text-xs">
-                              <span className="text-blue-50/90">{goal.week}</span>
-                              <span className="font-semibold text-white">
-                                {goal.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
-                              </span>
+                  <div className="relative rounded-2xl border border-white/25 bg-gradient-to-br from-white/14 via-white/10 to-white/8 p-6 lg:p-8 backdrop-blur-xl shadow-[0_20px_50px_rgba(15,23,42,0.4)] overflow-hidden group">
+                    {/* Animated Background Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
+                    
+                    <div className="relative z-10">
+                      {/* Weekly Spending Goals Section */}
+                      <div className="mb-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg">
+                              💰
                             </div>
-                          ))}
+                            <p className="text-base lg:text-lg font-bold uppercase tracking-widest text-white">Weekly Target</p>
+                          </div>
+                          {userRole === 'Admin' ? (
+                            <input
+                              type="number"
+                              value={weeklySpendingTarget}
+                              onChange={(e) => setWeeklySpendingTarget(Number(e.target.value))}
+                              className="w-28 px-3 py-1.5 rounded-lg bg-white/10 border border-white/20 text-white font-bold text-sm lg:text-base text-right focus:outline-none focus:border-cyan-400/60 transition-colors"
+                            />
+                          ) : (
+                            <p className="text-lg lg:text-xl font-black text-cyan-300">
+                              {weeklySpendingTarget.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
+                            </p>
+                          )}
+                        </div>
+                        {/* Weekly Breakdown */}
+                        <div>
+                          <p className="text-xs lg:text-sm font-bold uppercase tracking-widest text-blue-100 mb-3">Weekly Breakdown</p>
+                          <div className="space-y-2">
+                            {[
+                              { week: 'Week 1', amount: 2000 },
+                              { week: 'Week 2', amount: 3500 },
+                              { week: 'Week 3', amount: 1500 },
+                              { week: 'Week 4', amount: 2500 },
+                            ].map((goal, idx) => (
+                              <div key={goal.week} 
+                                style={{
+                                  animation: `slideIn 0.5s ease-out ${idx * 0.12}s both`
+                                }}
+                                className="flex items-center justify-between px-1 py-1.5">
+                                <span className="text-blue-50 font-semibold text-xs lg:text-sm">{goal.week}</span>
+                                <span className="font-bold text-cyan-300 text-sm lg:text-base">
+                                  {goal.amount.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div className="rounded-xl border border-emerald-200/30 bg-emerald-500/10 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-emerald-100/90 mb-1">Saved</p>
-                          <p className="text-sm font-semibold text-white">
-                            {thisMonthSavings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
-                          </p>
+                      {/* Saved and Alert Cards */}
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className={`relative group/saved rounded-xl border p-5 overflow-hidden ${actualSavings >= 0 ? 'border-emerald-400/50 bg-gradient-to-br from-emerald-500/20 via-emerald-400/10 to-transparent' : 'border-rose-400/50 bg-gradient-to-br from-rose-500/20 via-rose-400/10 to-transparent'}`}>
+                          {/* Animated background */}
+                          <div className={`absolute inset-0 ${actualSavings >= 0 ? 'bg-gradient-to-br from-emerald-600/0 to-emerald-600/5' : 'bg-gradient-to-br from-rose-600/0 to-rose-600/5'}`}></div>
+                          <div className="relative">
+                            <p className={`text-xs font-bold uppercase tracking-widest mb-2 ${actualSavings >= 0 ? 'text-emerald-100' : 'text-rose-100'}`}>💰 Total Savings</p>
+                            <p className="text-2xl lg:text-3xl font-black text-white leading-tight mb-2 drop-shadow-lg">
+                              {actualSavings.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}
+                            </p>
+                            <div className={`h-1 w-12 rounded-full transition-all duration-500 ${actualSavings >= 0 ? 'bg-gradient-to-r from-emerald-400 to-emerald-300' : 'bg-gradient-to-r from-rose-400 to-rose-300'}`}></div>
+                          </div>
                         </div>
-                        <div className="rounded-xl border border-amber-200/30 bg-amber-500/10 p-3">
-                          <p className="text-[11px] uppercase tracking-wider text-amber-100/90 mb-1">Alert</p>
-                          <p className="text-sm font-semibold text-white">
-                            {expenseDifference > 0
-                              ? `Spending is higher by ${Math.abs(Number(expenseChangePercent))}%`
-                              : 'Spending is under control'}
-                          </p>
+                        
+                        <div className={`relative group/alert rounded-xl border p-5 overflow-hidden ${isOverBudget ? 'border-rose-500/50 bg-gradient-to-br from-rose-600/25 via-rose-500/12 to-transparent animate-pulse-subtle' : 'border-emerald-500/50 bg-gradient-to-br from-emerald-600/25 via-emerald-500/12 to-transparent'}`}>
+                          {/* Animated background */}
+                          <div className={`absolute inset-0 ${isOverBudget ? 'bg-gradient-to-br from-rose-700/0 to-rose-700/5' : 'bg-gradient-to-br from-emerald-700/0 to-emerald-700/5'}`}></div>
+                          <div className={`absolute top-0 right-0 w-20 h-20 ${isOverBudget ? 'bg-rose-500/10' : 'bg-emerald-500/10'} rounded-full blur-2xl -mr-6 -mt-6`}></div>
+                          <div className="relative">
+                            <p className={`text-xs font-bold uppercase tracking-widest mb-2 ${isOverBudget ? 'text-rose-100' : 'text-emerald-100'}`}>{isOverBudget ? '⚠️' : '✅'} {isOverBudget ? 'Over' : 'Under'}</p>
+                            <p className="text-2xl lg:text-3xl font-black text-white leading-tight mb-2 drop-shadow-lg">
+                              {isOverBudget ? '+' : '-'}{budgetDifferencePercent}%
+                            </p>
+                            <p className={`text-xs lg:text-sm font-semibold flex items-center gap-1.5 ${isOverBudget ? 'text-rose-100/90' : 'text-emerald-100/90'}`}>
+                              <span className={`inline-block w-2 h-2 rounded-full ${isOverBudget ? 'bg-rose-400 animate-pulse' : 'bg-emerald-400'}`}></span>
+                              <span className="truncate">{isOverBudget 
+                                ? `+${budgetDifference.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}` 
+                                : `-${budgetDifference.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 })}`
+                              }</span>
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -243,27 +287,36 @@ export default function Dashboard() {
                 </div>
 
                 {/* Spending Distribution Section */}
-                <div className="bg-white rounded-lg p-6 border border-gray-200 min-w-0">
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">Spending Distribution</h2>
-                  <div className="h-64 mb-5 min-w-0">
+                <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 transform hover:scale-[1.01] min-w-0">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Spending Distribution</h2>
+                    <p className="text-xs text-gray-500 mt-1">Breakdown by category</p>
+                  </div>
+                  <div className="h-64 mb-8 min-w-0">
                     <Charts chartType="pieOnly" />
                   </div>
                   <div className="px-6 sm:px-8">
-                    <div className="max-w-[420px] ml-12 sm:ml-14 md:ml-16 mr-auto space-y-2">
+                    <div className="max-w-[420px] ml-12 sm:ml-14 md:ml-16 mr-auto space-y-4">
                       {displayedCategories.map((item, idx) => (
-                        <div key={idx} className="flex w-full min-w-0 items-center gap-2 py-1.5 pl-6 sm:pl-8 md:pl-10 lg:pl-12">
-                          <div className="w-3 h-3 rounded-sm shrink-0 ml-4 sm:ml-6 md:ml-8 lg:ml-10" style={{ backgroundColor: colors[idx % colors.length] }}></div>
-                          <span className="min-w-0 truncate text-[12px] sm:text-[13px] font-medium text-gray-700">{item.name}</span>
-                          <span className="shrink-0 text-[12px] sm:text-[13px] font-semibold text-gray-800">${item.value.toLocaleString()}</span>
+                        <div 
+                          key={idx} 
+                          className="flex w-full min-w-0 items-center gap-4 py-3.5 pl-6 sm:pl-8 md:pl-10 lg:pl-12 px-4 rounded-lg bg-gray-50 hover:bg-blue-50 transition-all duration-300 transform hover:translate-x-1 group"
+                        >
+                          <div 
+                            className="w-5 h-5 rounded-md shrink-0 ml-4 sm:ml-6 md:ml-8 lg:ml-10 shadow-md group-hover:shadow-lg transition-all duration-300 transform group-hover:scale-125" 
+                            style={{ backgroundColor: colors[idx % colors.length] }}
+                          ></div>
+                          <span className="min-w-0 truncate text-sm font-semibold text-gray-800">{item.name}</span>
+                          <span className="shrink-0 text-base font-bold text-gray-900">${item.value.toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                   {hasMoreCategories && (
-                    <div className="mt-4 px-6 sm:px-8">
+                    <div className="mt-6 px-6 sm:px-8">
                       <div className="max-w-[420px] ml-12 sm:ml-14 md:ml-16 mr-auto text-right pr-2 pl-6 sm:pl-8 md:pl-10 lg:pl-12">
-                        <Link to="/pie-chart" className="text-[12px] sm:text-[13px] font-semibold text-blue-600 hover:text-blue-800 transition-colors">
-                          View More &rarr;
+                        <Link to="/pie-chart" className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors inline-flex items-center gap-2 hover:gap-3">
+                          View More <span className="text-lg">→</span>
                         </Link>
                       </div>
                     </div>
@@ -272,6 +325,30 @@ export default function Dashboard() {
 
               </div>
             </div>
+
+            <style>{`
+              @keyframes slideIn {
+                from {
+                  opacity: 0;
+                  transform: translateY(10px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(0);
+                }
+              }
+              @keyframes pulse-subtle {
+                0%, 100% {
+                  opacity: 1;
+                }
+                50% {
+                  opacity: 0.8;
+                }
+              }
+              .animate-pulse-subtle {
+                animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+              }
+            `}</style>
           </div>
         </main>
       </div>
